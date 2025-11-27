@@ -1,0 +1,559 @@
+              <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bulk Message Server</title>
+    <style>
+        :root {
+            --primary-blue: #3498db;
+            --primary-red: #e74c3c;
+            --primary-pink: #e84393;
+            --primary-white: #ecf0f1;
+            --dark-bg: #2c3e50;
+            --darker-bg: #1a252f;
+            --light-bg: #34495e;
+            --accent-color: #f1c40f;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark-bg);
+            color: var(--primary-white);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(52, 152, 219, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(231, 76, 60, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 50% 50%, rgba(232, 67, 147, 0.1) 0%, transparent 30%);
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-pink));
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--primary-blue), var(--primary-pink), var(--primary-red));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card {
+            background-color: var(--light-bg);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-left: 5px solid var(--primary-blue);
+        }
+        
+        .card.red {
+            border-left-color: var(--primary-red);
+        }
+        
+        .card.pink {
+            border-left-color: var(--primary-pink);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-white);
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--darker-bg);
+            border-radius: 6px;
+            font-size: 16px;
+            background-color: var(--darker-bg);
+            color: var(--primary-white);
+            transition: all 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-pink));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        button.stop {
+            background: linear-gradient(135deg, var(--primary-red), #c0392b);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-running {
+            background-color: #2ecc71;
+            box-shadow: 0 0 10px #2ecc71;
+        }
+        
+        .status-stopped {
+            background-color: var(--primary-red);
+        }
+        
+        .logs-container {
+            background-color: var(--darker-bg);
+            border-radius: 8px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--light-bg);
+        }
+        
+        .log-success {
+            color: #2ecc71;
+        }
+        
+        .log-error {
+            color: var(--primary-red);
+        }
+        
+        .log-system {
+            color: var(--primary-blue);
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background-color: var(--light-bg);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--accent-color);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--primary-white);
+            opacity: 0.8;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--primary-white);
+            opacity: 0.7;
+            font-size: 14px;
+        }
+        
+        .session-key {
+            background-color: var(--darker-bg);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 15px 0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>WhatsApp Bulk Message Server</h1>
+            <p>Non-stop messaging platform with 24/7 operation</p>
+        </header>
+        
+        <div class="card">
+            <h2>Start New Session</h2>
+            <form id="sendForm">
+                <div class="form-group">
+                    <label for="creds">WhatsApp Credentials (Base64)</label>
+                    <textarea name="creds" id="creds" rows="4" required placeholder="Paste base64 encoded credentials.json"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sms">Message File (TXT)</label>
+                    <input type="file" name="sms" id="sms" accept=".txt" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="targetType">Target Type</label>
+                    <select name="targetType" id="targetType" required>
+                        <option value="inbox">Individual Chat</option>
+                        <option value="group">Group Chat</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="targetNumber">Target Number/Group ID</label>
+                    <input type="text" name="targetNumber" id="targetNumber" required placeholder="e.g. 919876543210 or 1234567890@g.us">
+                </div>
+                
+                <div class="form-group">
+                    <label for="hatersName">Message Prefix</label>
+                    <input type="text" name="hatersName" id="hatersName" required placeholder="Text to add before each message">
+                </div>
+                
+                <div class="form-group">
+                    <label for="timeDelay">Delay Between Messages (seconds)</label>
+                    <input type="number" name="timeDelay" id="timeDelay" min="1" value="5" required>
+                </div>
+                
+                <button type="submit">Start Sending Messages</button>
+            </form>
+        </div>
+        
+        <div class="card red hidden" id="sessionControlCard">
+            <h2>Active Session Control</h2>
+            <div id="sessionInfo"></div>
+            
+            <div class="stats-container" id="statsContainer"></div>
+            
+            <h3>Live Logs</h3>
+            <div class="logs-container" id="logsContainer"></div>
+            
+            <button class="stop" id="stopButton">Stop Session</button>
+        </div>
+        
+        <div class="card pink">
+            <h2>Stop Existing Session</h2>
+            <form id="stopForm">
+                <div class="form-group">
+                    <label for="sessionKey">Session Key</label>
+                    <input type="text" name="sessionKey" id="stopSessionKey" required placeholder="Enter your session key">
+                </div>
+                <button type="submit" class="stop">Stop Session</button>
+            </form>
+        </div>
+        
+        <footer>
+            <p>Powered by <strong>EVIL FORCE</strong> | 24/7 Non-Stop Operation</p>
+        </footer>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sendForm = document.getElementById('sendForm');
+            const stopForm = document.getElementById('stopForm');
+            const sessionControlCard = document.getElementById('sessionControlCard');
+            const sessionInfo = document.getElementById('sessionInfo');
+            const logsContainer = document.getElementById('logsContainer');
+            const statsContainer = document.getElementById('statsContainer');
+            const stopButton = document.getElementById('stopButton');
+            
+            let ws = null;
+            let currentSessionKey = null;
+            let reconnectAttempts = 0;
+            const maxReconnectAttempts = 5;
+            
+            // Start session form
+            sendForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(sendForm);
+                
+                fetch('/send', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentSessionKey = data.sessionKey;
+                        startSessionMonitoring(currentSessionKey);
+                        window.location.hash = currentSessionKey;
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to start session');
+                });
+            });
+            
+            // Stop session form
+            stopForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const sessionKey = document.getElementById('stopSessionKey').value;
+                
+                fetch('/stop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionKey })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        if (sessionKey === currentSessionKey) {
+                            stopSessionMonitoring();
+                            window.location.hash = '';
+                        }
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to stop session');
+                });
+            });
+            
+            // Manual stop button
+            stopButton.addEventListener('click', function() {
+                if (currentSessionKey) {
+                    fetch('/stop', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sessionKey: currentSessionKey })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            stopSessionMonitoring();
+                            window.location.hash = '';
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to stop session');
+                    });
+                }
+            });
+            
+            function startSessionMonitoring(sessionKey) {
+                sessionControlCard.classList.remove('hidden');
+                connectWebSocket(sessionKey);
+                pollSessionStatus(sessionKey);
+            }
+            
+            function connectWebSocket(sessionKey) {
+                if (ws) ws.close();
+                
+                ws = new WebSocket(`ws://${window.location.host}`);
+                reconnectAttempts = 0;
+                
+                ws.onopen = function() {
+                    ws.send(JSON.stringify({
+                        type: 'subscribe',
+                        sessionKey: sessionKey
+                    }));
+                };
+                
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'log') {
+                        addLogEntry(data.data);
+                    } else if (data.type === 'logs') {
+                        logsContainer.innerHTML = '';
+                        data.data.forEach(log => addLogEntry(log));
+                    }
+                };
+                
+                ws.onclose = function() {
+                    if (currentSessionKey && reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        setTimeout(() => connectWebSocket(sessionKey), 3000);
+                    }
+                };
+                
+                ws.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                };
+            }
+            
+            function stopSessionMonitoring() {
+                if (ws) {
+                    ws.close();
+                    ws = null;
+                }
+                
+                sessionControlCard.classList.add('hidden');
+                currentSessionKey = null;
+                logsContainer.innerHTML = '';
+                statsContainer.innerHTML = '';
+            }
+            
+            function pollSessionStatus(sessionKey) {
+                if (!sessionKey) return;
+                
+                fetch(`/status/${sessionKey}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            updateSessionInfo(data);
+                            
+                            if (data.running) {
+                                setTimeout(() => pollSessionStatus(sessionKey), 2000);
+                            } else {
+                                stopSessionMonitoring();
+                            }
+                        } else {
+                            stopSessionMonitoring();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Polling error:', error);
+                        setTimeout(() => pollSessionStatus(sessionKey), 5000);
+                    });
+            }
+            
+            function updateSessionInfo(data) {
+                sessionInfo.innerHTML = `
+                    <h3>Session Information</h3>
+                    <p><strong>Status:</strong> 
+                        <span class="status-indicator ${data.running ? 'status-running' : 'status-stopped'}"></span>
+                        ${data.running ? 'RUNNING' : 'STOPPED'}
+                    </p>
+                    <p><strong>Target:</strong> ${data.targetNumber} (${data.targetType})</p>
+                    <p><strong>Started At:</strong> ${new Date(data.startTime).toLocaleString()}</p>
+                    <p><strong>Last Activity:</strong> ${new Date(data.lastActivity).toLocaleTimeString()}</p>
+                    <p><strong>Session Key:</strong></p>
+                    <div class="session-key">${currentSessionKey}</div>
+                `;
+                
+                statsContainer.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-label">Messages Sent</div>
+                        <div class="stat-value">${data.sentCount}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Failed Messages</div>
+                        <div class="stat-value">${data.failedCount}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Success Rate</div>
+                        <div class="stat-value">${calculateSuccessRate(data.sentCount, data.failedCount)}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Uptime</div>
+                        <div class="stat-value">${formatUptime(data.startTime)}</div>
+                    </div>
+                `;
+            }
+            
+            function calculateSuccessRate(sent, failed) {
+                const total = sent + failed;
+                return total > 0 ? Math.round((sent / total) * 100) : 0;
+            }
+            
+            function formatUptime(startTime) {
+                const seconds = Math.floor((new Date() - new Date(startTime)) / 1000);
+                const days = Math.floor(seconds / (3600 * 24));
+                const hours = Math.floor((seconds % (3600 * 24)) / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = Math.floor(seconds % 60);
+                
+                let result = [];
+                if (days > 0) result.push(`${days}d`);
+                if (hours > 0) result.push(`${hours}h`);
+                if (minutes > 0) result.push(`${minutes}m`);
+                if (secs > 0 || result.length === 0) result.push(`${secs}s`);
+                
+                return result.join(' ');
+            }
+            
+            function addLogEntry(log) {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                
+                if (log.includes('[SUCCESS]')) {
+                    logEntry.classList.add('log-success');
+                } else if (log.includes('[ERROR]')) {
+                    logEntry.classList.add('log-error');
+                } else if (log.includes('[SYSTEM]')) {
+                    logEntry.classList.add('log-system');
+                }
+                
+                logEntry.textContent = log;
+                logsContainer.appendChild(logEntry);
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+            }
+            
+            // Check for session key in URL hash
+            if (window.location.hash) {
+                const sessionKey = window.location.hash.substring(1);
+                fetch(`/status/${sessionKey}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.running) {
+                            currentSessionKey = sessionKey;
+                            startSessionMonitoring(sessionKey);
+                        }
+                    });
+            }
+        });
+    </script>
+</body>
+    </html>
